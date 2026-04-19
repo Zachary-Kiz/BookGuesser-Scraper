@@ -5,7 +5,7 @@ import boto3
 import os
 from dotenv import load_dotenv
 
-from postgres_funcs import sql_get_book
+from postgres_funcs import sql_get_book, sql_upload_book
 
 load_dotenv()
 
@@ -29,16 +29,15 @@ def get_book(query, limit=10):
     res = requests.get(url)
     data = res.json()
     
-    book_data = []
     all_books = data['docs']
     for book in all_books:
         if query == book["title"]:
-            book_data.append({
+            book_data = {
                 "author_name" : ",".join(book['author_name']),
                 "first_publish_year": book["first_publish_year"],
                 "title": book["title"],
                 "cover_i": book["cover_i"]
-            })
+            }
             break
     return book_data
 
@@ -47,15 +46,14 @@ def get_cover_url(cover_id):
 
 def download_covers(book_data):
     paths = {}
-    for book in book_data:
-        url = get_cover_url(book['cover_i'])
-        img = requests.get(url).content
+    url = get_cover_url(book_data['cover_i'])
+    img = requests.get(url).content
 
-        cover_id = book['cover_i']
-        path = f"image/{cover_id}.jpg"
-        with open(path, "wb") as f:
-            f.write(img)
-        paths[cover_id] = path
+    cover_id = book_data['cover_i']
+    path = f"image/{cover_id}.jpg"
+    with open(path, "wb") as f:
+        f.write(img)
+    paths[cover_id] = path
     return paths
 
 
@@ -104,3 +102,4 @@ if __name__ == "__main__":
     paths = download_covers(book_data)
     img_data = generate_levels(paths)
     upload_img(img_data)
+    sql_upload_book(book_data, img_data)
