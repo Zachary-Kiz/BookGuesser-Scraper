@@ -5,6 +5,8 @@ import boto3
 import os
 from dotenv import load_dotenv
 
+from postgres_funcs import sql_get_book
+
 load_dotenv()
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -20,9 +22,9 @@ client = boto3.client(
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY
 )
 
-pixelLevels = [20, 15, 12, 10, 8, 5]
+pixelLevels = [20, 15, 12, 10, 8, 5, 1]
 
-def get_books(query="fantasy", limit=10):
+def get_book(query, limit=10):
     url = f"https://openlibrary.org/search.json?q={query}&limit={limit}"
     res = requests.get(url)
     data = res.json()
@@ -30,12 +32,14 @@ def get_books(query="fantasy", limit=10):
     book_data = []
     all_books = data['docs']
     for book in all_books:
-        book_data.append({
-            "author_name" : ",".join(book['author_name']),
-            "first_publish_year": book["first_publish_year"],
-            "title": book["title"],
-            "cover_i": book["cover_i"]
-        })
+        if query == book["title"]:
+            book_data.append({
+                "author_name" : ",".join(book['author_name']),
+                "first_publish_year": book["first_publish_year"],
+                "title": book["title"],
+                "cover_i": book["cover_i"]
+            })
+            break
     return book_data
 
 def get_cover_url(cover_id):
@@ -56,7 +60,7 @@ def download_covers(book_data):
 
 
 def generate_levels(paths):
-    img_paths = []
+    img_data = []
     for cover_id in paths:
         
         image_path = paths[cover_id]
@@ -69,21 +73,34 @@ def generate_levels(paths):
 
             output = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
 
-            path = f"processed/{cover_id}_level_{i}.jpg"
+            level = i + 1
+            path = f"processed/{cover_id}_level_{level}.jpg"
             cv2.imwrite(path, output)
-            img_paths.append((f"{cover_id}/level_{i}.jpg", path))
-    return img_paths
+            img_data.append({
+                "cover_id": cover_id,
+                "path": path,
+                "level": level
+            })
+    return img_data
 
-def upload_img(paths):
-    for path in paths:
+def get_key(data):
+    return f"{data['cover_id']}/level_{data['level']}.jpg"
+
+def upload_img(img_data):
+    for data in img_data:
+        key = get_key(data)
         client.upload_file(
-            Filename=path[1],
+            Filename=data['path'],
             Bucket=AWS_BUCKET,
-            Key=path[0]
+            Key=key,
+            ExtraArgs={
+                "ContentType": "image/jpeg"
+            }
         )
     
-
-book_data = get_books()
-paths = download_covers(book_data)
-new_paths = generate_levels(paths)
-upload_img(new_paths)
+if __name__ == "__main__":
+    book = sql_get_book()
+    book_data = get_book(book['title'])
+    paths = download_covers(book_data)
+    img_data = generate_levels(paths)
+    upload_img(img_data)

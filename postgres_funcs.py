@@ -13,7 +13,7 @@ POSTGRESQL_PWD = os.getenv('POSTGRESQL_PWD')
 
 connection = psycopg2.connect(database=POSTGRESQL_DATABASE, user=POSTGRESQL_USER, password=POSTGRESQL_PWD, port=5432, cursor_factory=RealDictCursor)
 
-def getBook():
+def sql_get_book():
     cursor = connection.cursor()
     cursor.execute("""
                    SELECT * FROM bookData 
@@ -26,5 +26,3 @@ def getBook():
     record = cursor.fetchone()
 
     return record
-
-getBook()
