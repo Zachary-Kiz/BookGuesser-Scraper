@@ -1,6 +1,7 @@
 import os
 import psycopg2
 
+from datetime import date, timedelta
 from dotenv import load_dotenv
 from psycopg2.extras import RealDictCursor
 
@@ -65,6 +66,16 @@ def sql_upload_book(book_data, img_data):
                 url
             )
         )
+
+    one_week_from_today = date.today() + timedelta(days=7)
+    
+    cursor.execute(
+        "INSERT INTO daily_puzzle (puzzle_date, book_id) VALUES (%s, %s)",
+        (
+            one_week_from_today,
+            book['id']
+        )
+    )
     connection.commit()
     print("COMPLETE!!")
 
