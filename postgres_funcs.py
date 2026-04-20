@@ -13,7 +13,7 @@ POSTGRESQL_USER = os.getenv('POSTGRESQL_USER')
 POSTGRESQL_PWD = os.getenv('POSTGRESQL_PWD')
 AWS_BUCKET = os.getenv('AWS_BUCKET')
 
-connection = psycopg2.connect(database=POSTGRESQL_DATABASE, user=POSTGRESQL_USER, password=POSTGRESQL_PWD, port=5432, cursor_factory=RealDictCursor)
+connection = psycopg2.connect(database=POSTGRESQL_DATABASE, user=POSTGRESQL_USER, password=POSTGRESQL_PWD, host="localhost", port=5432, cursor_factory=RealDictCursor)
 cursor = connection.cursor()
 
 def sql_get_book():
