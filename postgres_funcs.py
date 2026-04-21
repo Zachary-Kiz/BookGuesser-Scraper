@@ -1,19 +1,39 @@
+import json
 import os
 import psycopg2
+import subprocess
 
-from datetime import date, timedelta
 from dotenv import load_dotenv
+from datetime import date, timedelta
 from psycopg2.extras import RealDictCursor
 
-
-load_dotenv()
-
-POSTGRESQL_DATABASE = os.getenv('POSTGRESQL_DATABASE')
+load_dotenv('.rds.env')
 POSTGRESQL_USER = os.getenv('POSTGRESQL_USER')
-POSTGRESQL_PWD = os.getenv('POSTGRESQL_PWD')
+POSTGRESQL_DATABASE = os.getenv('POSTGRESQL_DATABASE')
+DB_HOSTNAME = os.getenv('DB_HOSTNAME')
 AWS_BUCKET = os.getenv('AWS_BUCKET')
+RDS_SECRET = os.getenv('RDS_SECRET')
 
-connection = psycopg2.connect(database=POSTGRESQL_DATABASE, user=POSTGRESQL_USER, password=POSTGRESQL_PWD, host="localhost", port=5432, cursor_factory=RealDictCursor)
+secret = subprocess.check_output([
+    "aws", "secretsmanager", "get-secret-value",
+    "--secret-id", RDS_SECRET,
+    "--query", "SecretString",
+    "--output", "text",
+    "--region", "us-east-2"
+]).decode()
+    
+password = json.loads(secret)['password']
+
+connection = psycopg2.connect(
+    user=POSTGRESQL_USER, 
+    password=password, 
+    host=DB_HOSTNAME, 
+    port=5432, 
+    database=POSTGRESQL_DATABASE, 
+    cursor_factory=RealDictCursor, 
+    sslmode='verify-full',
+    sslrootcert='./global-bundle.pem'
+    )
 cursor = connection.cursor()
 
 def sql_get_book():
@@ -24,7 +44,6 @@ def sql_get_book():
                    LIMIT 1
                    """)
 
-    # Fetch all rows from database
     record = cursor.fetchone()
 
     return record

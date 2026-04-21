@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from postgres_funcs import sql_get_book, sql_upload_book
 
-load_dotenv()
+load_dotenv('.env')
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
