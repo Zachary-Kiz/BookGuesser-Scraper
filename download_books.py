@@ -102,4 +102,4 @@ if __name__ == "__main__":
     paths = download_covers(book_data)
     img_data = generate_levels(paths)
     upload_img(img_data)
-    sql_upload_book(book_data, img_data)
+    sql_upload_book(book, book_data, img_data)

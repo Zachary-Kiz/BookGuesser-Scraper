@@ -48,7 +48,7 @@ def sql_get_book():
 
     return record
 
-def sql_upload_book(book_data, img_data):
+def sql_upload_book(record, book_data, img_data):
 
     if book_data is None:
         raise Exception("Book not pulled from DB")
@@ -95,6 +95,9 @@ def sql_upload_book(book_data, img_data):
             book['id']
         )
     )
+
+    cursor.execute(f"UPDATE bookData SET downloaded = TRUE WHERE id = {record['id']}")
+    
     connection.commit()
     print("COMPLETE!!")
 
