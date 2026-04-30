@@ -24,22 +24,31 @@ client = boto3.client(
 
 pixelLevels = [20, 15, 12, 10, 8, 5, 1]
 
-def get_book(query, limit=10):
-    url = f"https://openlibrary.org/search.json?q={query}&limit={limit}"
-    res = requests.get(url)
-    data = res.json()
-    
-    all_books = data['docs']
-    for book in all_books:
-        if query == book["title"]:
-            book_data = {
-                "author_name" : ",".join(book['author_name']),
-                "first_publish_year": book["first_publish_year"],
-                "title": book["title"],
-                "cover_i": book["cover_i"]
-            }
-            break
-    return book_data
+def get_book(query, genre, limit=10):
+    try:
+        url = f"https://openlibrary.org/search.json?q={query}&limit={limit}"
+        res = requests.get(url)
+        data = res.json()
+        
+        book_data = {}
+        all_books = data['docs']
+        for book in all_books:
+            if not book.get("cover_i"):
+                continue
+            if query == book["title"]:
+                book_data["author_name"] = ",".join(book['author_name'])
+                book_data["first_publish_year"] = book["first_publish_year"]
+                book_data["title"] = book["title"]
+                book_data["cover_i"] = book["cover_i"]
+                book_data['genre'] = genre
+                break
+        if not book_data:
+            raise Exception("Did not find book data from api")
+        return book_data
+    except requests.exceptions.Timeout:
+        print("Request Timed Out")
+    except Exception as e:
+        print(e)
 
 def get_cover_url(cover_id):
     return f"https://covers.openlibrary.org/b/id/{cover_id}-L.jpg"
@@ -98,7 +107,7 @@ def upload_img(img_data):
     
 if __name__ == "__main__":
     book = sql_get_book()
-    book_data = get_book(book['title'])
+    book_data = get_book(book['title'], book['genre'])
     paths = download_covers(book_data)
     img_data = generate_levels(paths)
     upload_img(img_data)

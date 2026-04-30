@@ -14,15 +14,15 @@ DB_HOSTNAME = os.getenv('DB_HOSTNAME')
 AWS_BUCKET = os.getenv('AWS_BUCKET')
 RDS_SECRET = os.getenv('RDS_SECRET')
 
-secret = subprocess.check_output([
-    "aws", "secretsmanager", "get-secret-value",
-    "--secret-id", RDS_SECRET,
-    "--query", "SecretString",
-    "--output", "text",
-    "--region", "us-east-2"
-]).decode()
+# secret = subprocess.check_output([
+#     "aws", "secretsmanager", "get-secret-value",
+#     "--secret-id", RDS_SECRET,
+#     "--query", "SecretString",
+#     "--output", "text",
+#     "--region", "us-east-2"
+# ]).decode()
     
-password = json.loads(secret)['password']
+password = "138736zK!"
 
 connection = psycopg2.connect(
     user=POSTGRESQL_USER, 
@@ -54,11 +54,12 @@ def sql_upload_book(record, book_data, img_data):
         raise Exception("Book not pulled from DB")
     
     cursor.execute(
-        "INSERT INTO books (title, author, releaseYear) VALUES (%s, %s, %s)",
+        "INSERT INTO books (title, author, releaseYear, genre) VALUES (%s, %s, %s, %s)",
         (
             book_data['title'],
             book_data['author_name'],
-            book_data.get('first_publish_year')
+            book_data.get('first_publish_year'),
+            book_data['genre']
         )
     )
 
@@ -86,7 +87,7 @@ def sql_upload_book(record, book_data, img_data):
             )
         )
 
-    one_week_from_today = date.today() + timedelta(days=7)
+    one_week_from_today = date.today() + timedelta(days=0)
     
     cursor.execute(
         "INSERT INTO daily_puzzle (puzzle_date, book_id) VALUES (%s, %s)",
