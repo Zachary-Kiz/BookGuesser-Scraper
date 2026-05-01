@@ -5,7 +5,7 @@ import boto3
 import os
 from dotenv import load_dotenv
 
-from postgres_funcs import sql_get_book, sql_upload_book
+from postgres_funcs import handleError, sql_get_book, sql_upload_book
 
 load_dotenv('.env')
 
@@ -33,7 +33,7 @@ def get_book(query, genre, limit=10):
         book_data = {}
         all_books = data['docs']
         for book in all_books:
-            if not book.get("cover_i"):
+            if 'cover_i' not in book:
                 continue
             if query == book["title"]:
                 book_data["author_name"] = ",".join(book['author_name'])
@@ -47,8 +47,10 @@ def get_book(query, genre, limit=10):
         return book_data
     except requests.exceptions.Timeout:
         print("Request Timed Out")
+        return get_book(query, genre)
     except Exception as e:
         print(e)
+        return handleError(query)
 
 def get_cover_url(cover_id):
     return f"https://covers.openlibrary.org/b/id/{cover_id}-L.jpg"

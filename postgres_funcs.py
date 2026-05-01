@@ -12,21 +12,12 @@ POSTGRESQL_USER = os.getenv('POSTGRESQL_USER')
 POSTGRESQL_DATABASE = os.getenv('POSTGRESQL_DATABASE')
 DB_HOSTNAME = os.getenv('DB_HOSTNAME')
 AWS_BUCKET = os.getenv('AWS_BUCKET')
-RDS_SECRET = os.getenv('RDS_SECRET')
-
-# secret = subprocess.check_output([
-#     "aws", "secretsmanager", "get-secret-value",
-#     "--secret-id", RDS_SECRET,
-#     "--query", "SecretString",
-#     "--output", "text",
-#     "--region", "us-east-2"
-# ]).decode()
+AWS_PWD = os.getenv('AWS_PWD')
     
-password = "138736zK!"
 
 connection = psycopg2.connect(
     user=POSTGRESQL_USER, 
-    password=password, 
+    password=AWS_PWD, 
     host=DB_HOSTNAME, 
     port=5432, 
     database=POSTGRESQL_DATABASE, 
@@ -87,7 +78,7 @@ def sql_upload_book(record, book_data, img_data):
             )
         )
 
-    one_week_from_today = date.today() + timedelta(days=0)
+    one_week_from_today = date.today() + timedelta(days=7)
     
     cursor.execute(
         "INSERT INTO daily_puzzle (puzzle_date, book_id) VALUES (%s, %s)",
@@ -102,7 +93,7 @@ def sql_upload_book(record, book_data, img_data):
     connection.commit()
     print("COMPLETE!!")
 
-    
-
-
-
+def handleError(book):
+    cursor.execute(f"UPDATE bookData SET downloaded = TRUE WHERE title = {book}")
+    newBook = sql_get_book()
+    return newBook
