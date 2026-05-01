@@ -4,7 +4,7 @@ WORKDIR /usr/local/bookguesser
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 tesseract-ocr
 
 COPY download_books.py ./
 COPY postgres_funcs.py ./
