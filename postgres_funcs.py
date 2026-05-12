@@ -7,12 +7,11 @@ from dotenv import load_dotenv
 from datetime import date, timedelta
 from psycopg2.extras import RealDictCursor
 
-load_dotenv('.rds.env')
-POSTGRESQL_USER = os.getenv('POSTGRESQL_USER')
-POSTGRESQL_DATABASE = os.getenv('POSTGRESQL_DATABASE')
-DB_HOSTNAME = os.getenv('DB_HOSTNAME')
-AWS_BUCKET = os.getenv('AWS_BUCKET')
-AWS_PWD = os.getenv('AWS_PWD')
+POSTGRESQL_USER = os.environ['POSTGRESQL_USER']
+POSTGRESQL_DATABASE = os.environ['POSTGRESQL_DATABASE']
+DB_HOSTNAME = os.environ['DB_HOSTNAME']
+AWS_BUCKET = os.environ['AWS_BUCKET']
+AWS_PWD = os.environ['AWS_PWD']
     
 
 connection = psycopg2.connect(

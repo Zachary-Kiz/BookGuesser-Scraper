@@ -3,17 +3,18 @@ import cv2
 import pytesseract
 import boto3
 import os
-from dotenv import load_dotenv
+import logging
 
 from postgres_funcs import handleError, sql_get_book, sql_upload_book
 
-load_dotenv('.env')
-
 pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_BUCKET = os.getenv('AWS_BUCKET')
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+AWS_BUCKET = os.environ['AWS_BUCKET']
+
+logger = logging.getLogger()
+logger.setLevel('INFO')
 
 client = boto3.client(
     service_name="s3", 
@@ -108,9 +109,16 @@ def upload_img(img_data):
         )
     
 if __name__ == "__main__":
+    logger.debug('STARTED CODE')
     book = sql_get_book()
+    logger.debug('FOUND BOOK FROM POSTGRESQL')
     book_data = get_book(book['title'], book['genre'])
+    logger.debug('FOUND BOOK FROM OPEN LIBRARY')
     paths = download_covers(book_data)
+    logger.debug('DOWNLOADED COVERS')
     img_data = generate_levels(paths)
+    logger.debug('GENERATED IMAGE LEVELS')
     upload_img(img_data)
+    logger.debug('UPLOADED IMAGES TO S3')
     sql_upload_book(book, book_data, img_data)
+    logger.debug('FINISHED CODE')
