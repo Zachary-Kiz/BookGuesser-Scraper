@@ -1,3 +1,5 @@
+import sys
+
 import requests
 import cv2
 import pytesseract
@@ -9,18 +11,15 @@ from postgres_funcs import handleError, sql_get_book, sql_upload_book
 
 pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 AWS_BUCKET = os.environ['AWS_BUCKET']
 
 logger = logging.getLogger()
-logger.setLevel('INFO')
+logger.setLevel(logging.INFO)
+
 
 client = boto3.client(
     service_name="s3", 
-    region_name="eu-central-1", 
-    aws_access_key_id=AWS_ACCESS_KEY_ID, 
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+    region_name="us-east-2", 
 )
 
 pixelLevels = [20, 15, 12, 10, 8, 5, 1]
@@ -108,7 +107,7 @@ def upload_img(img_data):
             }
         )
     
-if __name__ == "__main__":
+def lambda_handler(event, context):
     logger.debug('STARTED CODE')
     book = sql_get_book()
     logger.debug('FOUND BOOK FROM POSTGRESQL')
@@ -122,3 +121,4 @@ if __name__ == "__main__":
     logger.debug('UPLOADED IMAGES TO S3')
     sql_upload_book(book, book_data, img_data)
     logger.debug('FINISHED CODE')
+    return f"Added {book['title']} to S3 and Postgresql"
