@@ -87,12 +87,12 @@ def sql_upload_book(record, book_data, img_data):
         )
     )
 
-    cursor.execute(f"UPDATE bookData SET downloaded = TRUE WHERE id = {record['id']}")
+    cursor.execute("UPDATE bookData SET downloaded = TRUE WHERE id = %s", (record['id'],))
     
     connection.commit()
     print("COMPLETE!!")
 
 def handleError(book):
-    cursor.execute(f"UPDATE bookData SET downloaded = TRUE WHERE title = {book}")
+    cursor.execute("UPDATE bookData SET downloaded = TRUE WHERE title = %s" (book,))
     newBook = sql_get_book()
     return newBook
