@@ -16,6 +16,9 @@ AWS_BUCKET = os.environ['AWS_BUCKET']
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+os.mkdir('/tmp/image')
+os.mkdir('/tmp/processed')
+
 
 client = boto3.client(
     service_name="s3", 
@@ -61,7 +64,7 @@ def download_covers(book_data):
     img = requests.get(url).content
 
     cover_id = book_data['cover_i']
-    path = f"image/{cover_id}.jpg"
+    path = f"/tmp/image/{cover_id}.jpg"
     with open(path, "wb") as f:
         f.write(img)
     paths[cover_id] = path
@@ -83,7 +86,7 @@ def generate_levels(paths):
             output = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
 
             level = i + 1
-            path = f"processed/{cover_id}_level_{level}.jpg"
+            path = f"/tmp/processed/{cover_id}_level_{level}.jpg"
             cv2.imwrite(path, output)
             img_data.append({
                 "cover_id": cover_id,
