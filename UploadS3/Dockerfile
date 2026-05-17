@@ -13,7 +13,5 @@ RUN yum install -y \
     libglib2.0-0
 
 COPY download_books.py ${LAMBDA_TASK_ROOT}
-COPY postgres_funcs.py ${LAMBDA_TASK_ROOT}
-COPY global-bundle.pem ${LAMBDA_TASK_ROOT}
 
 CMD [ "download_books.lambda_handler" ]

@@ -1,9 +1,8 @@
 import json
 import os
+import boto3
 import psycopg2
-import subprocess
 
-from dotenv import load_dotenv
 from datetime import date, timedelta
 from psycopg2.extras import RealDictCursor
 
@@ -13,6 +12,7 @@ DB_HOSTNAME = os.environ['DB_HOSTNAME']
 AWS_BUCKET = os.environ['AWS_BUCKET']
 AWS_PWD = os.environ['AWS_PWD']
     
+lambda_client = boto3.client("lambda")
 
 connection = psycopg2.connect(
     user=POSTGRESQL_USER, 
@@ -92,7 +92,30 @@ def sql_upload_book(record, book_data, img_data):
     connection.commit()
     print("COMPLETE!!")
 
+
 def handleError(book):
-    cursor.execute("UPDATE bookData SET downloaded = TRUE WHERE title = %s" (book,))
+    cursor.execute("UPDATE bookData SET downloaded = TRUE WHERE title = %s", (book,))
     newBook = sql_get_book()
     return newBook
+
+def lambda_handler(event, context):
+    book = sql_get_book()
+
+    response = lambda_client.invoke(
+        FunctionName="UploadImages",
+        InvocationType="RequestResponse",
+        Payload=json.dumps(book)
+    )
+
+    response_payload = json.loads(
+        response["Payload"].read()
+    )
+
+    if response_payload['statusCode'] != 200:
+        # handleError(book['title'])
+        return {"statusCode" : 400}
+    
+    body = response_payload['body']
+    
+    sql_upload_book(body['book'], body['book_data'], body['img_data'])
+    return {"statusCode" : 200}
