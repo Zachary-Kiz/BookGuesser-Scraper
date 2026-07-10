@@ -8,7 +8,7 @@ Link to Backend: [BookGuesser-Backend](https://github.com/Zachary-Kiz/BookGuesse
 
 BookGuesser uses an automated AWS-based pipeline to prepare daily puzzles.
 
-###Workflow:
+### Workflow:
 
 1. A scheduled AWS Lambda process selects a book from the database.
 2. Dockerized containers process the book cover image using OpenCV.
