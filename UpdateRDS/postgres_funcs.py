@@ -38,7 +38,7 @@ def sql_get_book():
 
     return record
 
-def sql_upload_book(record, book_data, img_data):
+def sql_upload_book(record, book_data, img_data, days=7):
 
     if book_data is None:
         raise Exception("Book not pulled from DB")
@@ -77,7 +77,7 @@ def sql_upload_book(record, book_data, img_data):
             )
         )
 
-    one_week_from_today = date.today() + timedelta(days=7)
+    one_week_from_today = date.today() + timedelta(days=days)
     
     cursor.execute(
         "INSERT INTO daily_puzzle (puzzle_date, book_id) VALUES (%s, %s)",
@@ -95,10 +95,9 @@ def sql_upload_book(record, book_data, img_data):
 
 def handleError(book):
     cursor.execute("UPDATE bookData SET downloaded = TRUE WHERE title = %s", (book,))
-    newBook = sql_get_book()
-    return newBook
+    upload()
 
-def lambda_handler(event, context):
+def upload():
     book = sql_get_book()
 
     response = lambda_client.invoke(
@@ -112,10 +111,19 @@ def lambda_handler(event, context):
     )
 
     if response_payload['statusCode'] != 200:
-        # handleError(book['title'])
-        return {"statusCode" : 400}
+        handleError(book['title'])
+        return
     
-    body = response_payload['body']
+    return response_payload['body']
+
+def lambda_handler(event, context):
     
-    sql_upload_book(body['book'], body['book_data'], body['img_data'])
+    days = 7
+
+    if 'days' in event:
+        days = event['days']
+    
+    body = upload()
+    
+    sql_upload_book(body['book'], body['book_data'], body['img_data'], days)
     return {"statusCode" : 200}
