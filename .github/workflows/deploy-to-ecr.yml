@@ -49,10 +49,10 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:latest
 
     - name: Build, tag, and push UploadS3 image
-        env:
+      env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.vars.outputs.IMAGE_TAG }}
-        run: |
+      run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:$IMAGE_TAG \
                         -t $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:latest \
                         ./UploadS3
