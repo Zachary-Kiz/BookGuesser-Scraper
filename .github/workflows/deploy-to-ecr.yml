@@ -17,44 +17,44 @@ permissions:
 
 jobs:
   build-and-push:
-  name: Build and Push Images
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key : ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-        aws-region: ${{ env.AWS_REGION }}
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key : ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Set image tag
-      id: vars
-      run: echo "IMAGE_TAG=${GITHUB_SHA::8} >> $GITHUB_OUTPUT"
+      - name: Set image tag
+        id: vars
+        run: echo "IMAGE_TAG=${GITHUB_SHA::8} >> $GITHUB_OUTPUT"
 
-    - name: Build, tag, and push UpdateRDS image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ steps.vars.outputs.IMAGE_TAG }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:$IMAGE_TAG \
-        -t $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:latest \
-                        ./UpdateRDS
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:latest
-
-    - name: Build, tag, and push UploadS3 image
-      env:
+      - name: Build, tag, and push UpdateRDS image
+        env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.vars.outputs.IMAGE_TAG }}
-      run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:$IMAGE_TAG \
-                        -t $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:latest \
-                        ./UploadS3
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:$IMAGE_TAG \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:latest \
+                          ./UpdateRDS
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:$IMAGE_TAG
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPDATE_RDS:latest
+
+      - name: Build, tag, and push UploadS3 image
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            IMAGE_TAG: ${{ steps.vars.outputs.IMAGE_TAG }}
+        run: |
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:$IMAGE_TAG \
+                          -t $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:latest \
+                          ./UploadS3
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:$IMAGE_TAG
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_UPLOAD_S3:latest
