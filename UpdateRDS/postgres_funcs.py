@@ -33,6 +33,9 @@ def sql_get_book():
 
     record = cursor.fetchone()
 
+    if record is None:
+        raise Exception("Book not pulled from bookData")
+
     return record
 
 def sql_upload_book(record, book_data, img_data, days=7):
