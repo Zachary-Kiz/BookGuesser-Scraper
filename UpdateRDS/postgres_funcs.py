@@ -10,6 +10,7 @@ POSTGRESQL_USER = os.environ['POSTGRESQL_USER']
 POSTGRESQL_PWD = os.environ['POSTGRESQL_PWD']
 POSTGRESQL_DATABASE = os.environ['POSTGRESQL_DATABASE']
 DB_HOSTNAME = os.environ['DB_HOSTNAME']
+AWS_BUCKET = os.environ['AWS_BUCKET']
     
 lambda_client = boto3.client("lambda")
 
