@@ -7,22 +7,18 @@ from datetime import date, timedelta
 from psycopg2.extras import RealDictCursor
 
 POSTGRESQL_USER = os.environ['POSTGRESQL_USER']
+POSTGRESQL_PWD = os.environ['POSTGRESQL_PWD']
 POSTGRESQL_DATABASE = os.environ['POSTGRESQL_DATABASE']
 DB_HOSTNAME = os.environ['DB_HOSTNAME']
-AWS_BUCKET = os.environ['AWS_BUCKET']
-AWS_PWD = os.environ['AWS_PWD']
     
 lambda_client = boto3.client("lambda")
 
 connection = psycopg2.connect(
-    user=POSTGRESQL_USER, 
-    password=AWS_PWD, 
-    host=DB_HOSTNAME, 
-    port=5432, 
-    database=POSTGRESQL_DATABASE, 
-    cursor_factory=RealDictCursor, 
-    sslmode='verify-full',
-    sslrootcert='./global-bundle.pem'
+    host=DB_HOSTNAME,
+    user=POSTGRESQL_USER,
+    password=POSTGRESQL_PWD,
+    port="5432",
+    database=POSTGRESQL_DATABASE
     )
 cursor = connection.cursor()
 
