@@ -108,6 +108,7 @@ def upload_img(img_data):
     
 def lambda_handler(event, context):
     logger.debug('STARTED CODE')
+    return event
     book = event
     logger.debug('FOUND BOOK FROM POSTGRESQL')
     book_data = get_book(book['title'], book['genre'])
