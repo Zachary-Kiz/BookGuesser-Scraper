@@ -19,7 +19,8 @@ connection = psycopg2.connect(
     user=POSTGRESQL_USER,
     password=POSTGRESQL_PWD,
     port="5432",
-    database=POSTGRESQL_DATABASE
+    database=POSTGRESQL_DATABASE,
+    cursor_factory=RealDictCursor
     )
 cursor = connection.cursor()
 
